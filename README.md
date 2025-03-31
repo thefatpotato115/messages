@@ -3,6 +3,4 @@
 </b>
 <br>
 <br>
-<a src="https://thefatpotato115.github.io/messages/index.html">
-  View the live site
-</a>
+[https://thefatpotato115.github.io/messages/index.html](View the live site)
