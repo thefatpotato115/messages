@@ -1,1 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send a Message</title>
+</head>
+<body>
+    <h2>Send a Message</h2>
+    <input type="text" id="messageInput" placeholder="Type your message">
+    <button onclick="sendMessage()">Send</button>
 
+    <script>
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+            fetch("http://localhost:3000/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: message })
+            }).then(() => {
+                document.getElementById("messageInput").value = "";
+            });
+        }
+    </script>
+</body>
+</html>
