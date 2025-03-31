@@ -15,24 +15,49 @@
         h2 {
             font-weight: 600;
         }
+        #messagesContainer {
+            max-height: 70vh;
+            overflow-y: auto;
+            border-radius: 5px;
+            background-color: #1e1e1e;
+            padding: 10px;
+            margin: 10px auto;
+            width: 80%;
+        }
         ul {
             list-style: none;
             padding: 0;
         }
         li {
-            background-color: #1e1e1e;
+            background-color: #333;
             padding: 10px;
             margin: 5px;
             border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #6200ea;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3700b3;
         }
     </style>
 </head>
 <body>
     <h2>All Messages</h2>
-    <ul id="messagesList"></ul>
+    <button onclick="toggleFullScreen()">Full Screen</button>
+    <div id="messagesContainer">
+        <ul id="messagesList"></ul>
+    </div>
 
     <script>
-        const backendUrl = "https://messages-7hn5.onrender.com"; // Change this to your backend URL
+        const backendUrl = "https://messages-7hn5.onrender.com";
 
         function loadMessages() {
             fetch(`${backendUrl}/messages`)
@@ -45,8 +70,23 @@
                         li.textContent = msg.text;
                         list.appendChild(li);
                     });
+                    scrollToBottom();
                 });
         }
+
+        function scrollToBottom() {
+            const container = document.getElementById("messagesContainer");
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
         loadMessages();
         setInterval(loadMessages, 2000);
     </script>
