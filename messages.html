@@ -10,8 +10,10 @@
     <ul id="messagesList"></ul>
 
     <script>
+        const backendUrl = "hhttps://messages-7hn5.onrender.com"; // Change to your deployed backend URL
+
         function loadMessages() {
-            fetch("http://localhost:3000/messages")
+            fetch(`${backendUrl}/messages`)
                 .then(response => response.json())
                 .then(messages => {
                     const list = document.getElementById("messagesList");
