@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages</title>
-    <link rel="icon" href="favicon.png" type="image/png">
+    <title>Send a Message</title>
+    <link rel="icon" href="favicon.png" type="image/png"> <!-- Favicon added here -->
     <style>
         body {
             background-color: #121212;
@@ -12,145 +12,157 @@
             font-family: 'Inter', sans-serif;
             text-align: center;
             padding: 20px;
-            overflow: hidden; /* Prevents scrolling */
         }
         h2 {
             font-weight: 600;
             color: #008080;
         }
-        #messagesContainer {
-            height: 75vh;
-            overflow-y: hidden; /* Hides scrollbar */
-            border-radius: 5px;
+        textarea {
+            width: 80%;
+            height: 100px;
             background-color: #1e1e1e;
-            padding: 20px;
-            margin: 10px auto;
-            width: 90%; /* Wider */
-            border: 2px solid #008080; /* Teal border */
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        li {
-            background-color: #333;
-            padding: 15px; /* More padding for readability */
-            margin: 8px 0;
+            color: #e0e0e0;
+            border: 2px solid #008080;
             border-radius: 5px;
-            transition: opacity 0.5s ease-in-out, background-color 0.3s;
-            font-size: 18px; /* Larger text */
-            border-left: 4px solid #008080; /* Teal accent on left side */
-            position: relative;
+            padding: 10px;
+            font-size: 16px;
         }
-        li:hover {
-            background-color: #2b2b2b;
-            text-decoration: line-through;
+        button {
+            background-color: #008080;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
         }
-        .timestamp {
-            position: absolute;
-            right: 10px;
-            bottom: 10px;
+        button:hover {
+            background-color: #00a5a5;
+        }
+        .message-info {
             font-size: 12px;
             color: #b0b0b0;
+            margin-top: 10px;
         }
-        .fullscreen-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
+        .message {
+            margin-top: 10px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            color: #e0e0e0;
+        }
+        .message .delete-btn {
+            color: red;
             cursor: pointer;
-            font-size: 24px;
-            color: #008080;
-            transition: color 0.3s;
-        }
-        .fullscreen-btn:hover {
-            color: #00a5a5;
         }
     </style>
 </head>
 <body>
-    <button class="fullscreen-btn" onclick="toggleFullScreen()">⛶</button>
-    <h2>All Messages</h2>
-    <div id="messagesContainer">
-        <ul id="messagesList"></ul>
-    </div>
+    <h2>Send a Message</h2>
+    <textarea id="messageInput" placeholder="Type your message here..." onkeydown="checkEnter(event)"></textarea><br>
+    <button onclick="sendMessage()">Send Message</button>
+    <p class="message-info">Sends a message to the always-on display on my desk</p>
+
+    <div id="messagesContainer"></div>
 
     <script>
         const backendUrl = "https://messages-7hn5.onrender.com";
+        const messagesContainer = document.getElementById("messagesContainer");
 
-        function formatTimeAgo(timestamp) {
-            const now = Date.now();
-            const diff = now - timestamp;
-            const seconds = Math.floor(diff / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+            if (message.trim()) {
+                const messageData = {
+                    text: message,
+                    timestamp: new Date().toISOString() // Add timestamp when message is sent
+                };
 
-            if (seconds < 60) return `${seconds} second${seconds !== 1 ? 's' : ''} ago`;
-            if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-            if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-            return `${days} day${days !== 1 ? 's' : ''} ago`;
-        }
-
-        function loadMessages() {
-            fetch(`${backendUrl}/messages`)
+                fetch(`${backendUrl}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(messageData)
+                })
                 .then(response => response.json())
-                .then(messages => {
-                    const list = document.getElementById("messagesList");
-                    list.innerHTML = "";
-
-                    messages.forEach(msg => {
-                        const li = document.createElement("li");
-                        li.textContent = msg.text;
-
-                        const timestamp = document.createElement("span");
-                        timestamp.classList.add("timestamp");
-                        timestamp.textContent = formatTimeAgo(msg.timestamp);
-                        li.appendChild(timestamp);
-
-                        li.addEventListener('click', () => deleteMessage(msg.id, li)); // Use msg.id for deletion
-
-                        list.appendChild(li);
-
-                        setTimeout(() => {
-                            li.style.opacity = "0";
-                            setTimeout(() => li.remove(), 500);
-                        }, 290000);
-                    });
-
-                    scrollToBottom();
-                });
+                .then(data => {
+                    console.log("Message sent:", data);
+                    document.getElementById("messageInput").value = ""; // Clear input
+                    displayMessage(data);
+                })
+                .catch(err => console.error("Error sending message:", err));
+            }
         }
 
-        function scrollToBottom() {
-            const container = document.getElementById("messagesContainer");
-            container.scrollTop = container.scrollHeight;
+        function displayMessage(messageData) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.innerHTML = `
+                <span>${messageData.text}</span>
+                <span class="delete-btn" onclick="deleteMessage('${messageData._id}')">❌</span>
+                <p class="timestamp">${calculateTimeAgo(messageData.timestamp)}</p>
+            `;
+            messagesContainer.appendChild(messageDiv);
+
+            // Remove message after 5 minutes
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5 * 60 * 1000); // 5 minutes
         }
 
-        function deleteMessage(id, element) {
-            fetch(`${backendUrl}/messages/${id}`, {
+        function calculateTimeAgo(timestamp) {
+            const now = new Date();
+            const messageTime = new Date(timestamp);
+            const diffInSeconds = Math.floor((now - messageTime) / 1000);
+
+            if (diffInSeconds < 60) {
+                return `${diffInSeconds} second${diffInSeconds > 1 ? 's' : ''} ago`;
+            } else if (diffInSeconds < 3600) {
+                const minutes = Math.floor(diffInSeconds / 60);
+                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            } else if (diffInSeconds < 86400) {
+                const hours = Math.floor(diffInSeconds / 3600);
+                return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            } else {
+                const days = Math.floor(diffInSeconds / 86400);
+                return `${days} day${days > 1 ? 's' : ''} ago`;
+            }
+        }
+
+        function checkEnter(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function deleteMessage(messageId) {
+            fetch(`${backendUrl}/messages/${messageId}`, {
                 method: 'DELETE'
             })
-            .then(response => {
-                if (response.ok) {
-                    element.remove(); // Remove message from UI
+            .then(response => response.json())
+            .then(() => {
+                const messageElement = document.querySelector(`[data-id="${messageId}"]`);
+                if (messageElement) {
+                    messageElement.remove();
                 }
             })
             .catch(err => console.error("Error deleting message:", err));
         }
 
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
+        // Load existing messages on page load
+        window.onload = () => {
+            fetch(`${backendUrl}/messages`)
+                .then(response => response.json())
+                .then(messages => {
+                    messages.forEach(message => {
+                        displayMessage(message);
+                    });
+                })
+                .catch(err => console.error("Error loading messages:", err));
         }
-
-        loadMessages();
-        setInterval(loadMessages, 2000);
     </script>
 </body>
 </html>
