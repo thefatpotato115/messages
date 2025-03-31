@@ -11,18 +11,19 @@
             font-family: 'Inter', sans-serif;
             text-align: center;
             padding: 20px;
+            overflow: hidden; /* Prevents scrolling */
         }
         h2 {
             font-weight: 600;
         }
         #messagesContainer {
-            max-height: 70vh;
-            overflow-y: auto;
+            height: 75vh;
+            overflow-y: hidden; /* Hides scrollbar */
             border-radius: 5px;
             background-color: #1e1e1e;
-            padding: 10px;
+            padding: 20px;
             margin: 10px auto;
-            width: 80%;
+            width: 90%; /* Wider */
         }
         ul {
             list-style: none;
@@ -30,10 +31,11 @@
         }
         li {
             background-color: #333;
-            padding: 10px;
-            margin: 5px;
+            padding: 15px; /* More padding for readability */
+            margin: 8px;
             border-radius: 5px;
             transition: opacity 0.5s ease-in-out;
+            font-size: 18px; /* Larger text */
         }
         .fullscreen-btn {
             position: absolute;
