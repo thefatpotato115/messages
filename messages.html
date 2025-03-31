@@ -3,48 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send a Message</title>
+    <title>Messages</title>
     <link rel="icon" href="favicon.png" type="image/png"> <!-- Favicon added here -->
     <style>
         body {
             background-color: #121212;
             color: #e0e0e0;
             font-family: 'Inter', sans-serif;
-            text-align: center;
             padding: 20px;
         }
         h2 {
             font-weight: 600;
             color: #008080;
-        }
-        textarea {
-            width: 80%;
-            height: 100px;
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            border: 2px solid #008080;
-            border-radius: 5px;
-            padding: 10px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #008080;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #00a5a5;
-        }
-        .message-info {
-            font-size: 12px;
-            color: #b0b0b0;
-            margin-top: 10px;
+            text-align: center;
         }
         .message {
             margin-top: 10px;
@@ -52,50 +23,36 @@
             padding: 10px;
             border-radius: 5px;
             color: #e0e0e0;
+            position: relative;
         }
         .message .delete-btn {
             color: red;
             cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .message .timestamp {
+            font-size: 12px;
+            color: #b0b0b0;
+        }
+        .message-info {
+            font-size: 12px;
+            color: #b0b0b0;
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h2>Send a Message</h2>
-    <textarea id="messageInput" placeholder="Type your message here..." onkeydown="checkEnter(event)"></textarea><br>
-    <button onclick="sendMessage()">Send Message</button>
-    <p class="message-info">Sends a message to the always-on display on my desk</p>
-
+    <h2>Messages</h2>
     <div id="messagesContainer"></div>
 
     <script>
         const backendUrl = "https://messages-7hn5.onrender.com";
         const messagesContainer = document.getElementById("messagesContainer");
 
-        function sendMessage() {
-            const message = document.getElementById("messageInput").value;
-            if (message.trim()) {
-                const messageData = {
-                    text: message,
-                    timestamp: new Date().toISOString() // Add timestamp when message is sent
-                };
-
-                fetch(`${backendUrl}/messages`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(messageData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Message sent:", data);
-                    document.getElementById("messageInput").value = ""; // Clear input
-                    displayMessage(data);
-                })
-                .catch(err => console.error("Error sending message:", err));
-            }
-        }
-
+        // Function to display messages on the page
         function displayMessage(messageData) {
             const messageDiv = document.createElement("div");
             messageDiv.classList.add("message");
@@ -112,6 +69,7 @@
             }, 5 * 60 * 1000); // 5 minutes
         }
 
+        // Function to calculate time ago for message timestamp
         function calculateTimeAgo(timestamp) {
             const now = new Date();
             const messageTime = new Date(timestamp);
@@ -131,13 +89,7 @@
             }
         }
 
-        function checkEnter(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-
+        // Function to delete a message from the server
         function deleteMessage(messageId) {
             fetch(`${backendUrl}/messages/${messageId}`, {
                 method: 'DELETE'
@@ -152,7 +104,7 @@
             .catch(err => console.error("Error deleting message:", err));
         }
 
-        // Load existing messages on page load
+        // Fetch and display all messages when the page loads
         window.onload = () => {
             fetch(`${backendUrl}/messages`)
                 .then(response => response.json())
