@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Send a Message</title>
+    <link rel="icon" href="favicon.png" type="image/png"> <!-- Favicon added here -->
     <style>
         body {
             background-color: #121212;
@@ -14,59 +15,66 @@
         }
         h2 {
             font-weight: 600;
+            color: #008080;
         }
-        input {
-            padding: 10px;
+        textarea {
             width: 80%;
-            max-width: 300px;
-            border: none;
-            border-radius: 5px;
+            height: 100px;
             background-color: #1e1e1e;
-            color: white;
+            color: #e0e0e0;
+            border: 2px solid #008080;
+            border-radius: 5px;
+            padding: 10px;
             font-size: 16px;
         }
         button {
-            padding: 10px 20px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
             background-color: #008080;
             color: white;
+            border: none;
+            padding: 10px 20px;
             font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #006666;
+            background-color: #00a5a5;
+        }
+        .message-info {
+            font-size: 12px;
+            color: #b0b0b0;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <h2>Send a Message</h2>
-    <input type="text" id="messageInput" placeholder="Type your message">
-    <button onclick="sendMessage()">Send</button>
+    <textarea id="messageInput" placeholder="Type your message here..."></textarea><br>
+    <button onclick="sendMessage()">Send Message</button>
+    <p class="message-info">Sends a message to the always-on display on my desk</p>
 
     <script>
         const backendUrl = "https://messages-7hn5.onrender.com";
 
         function sendMessage() {
-            const input = document.getElementById("messageInput");
-            const message = input.value.trim();
-            if (message === "") return;
-
-            fetch(`${backendUrl}/messages`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: message })
-            }).then(() => {
-                input.value = "";
-            });
-        }
-
-        document.getElementById("messageInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                sendMessage();
+            const message = document.getElementById("messageInput").value;
+            if (message.trim()) {
+                fetch(`${backendUrl}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Message sent:", data);
+                    document.getElementById("messageInput").value = ""; // Clear input
+                })
+                .catch(err => console.error("Error sending message:", err));
             }
-        });
+        }
     </script>
 </body>
 </html>
