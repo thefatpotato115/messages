@@ -50,7 +50,7 @@
 </head>
 <body>
     <h2>Send a Message</h2>
-    <textarea id="messageInput" placeholder="Type your message here..."></textarea><br>
+    <textarea id="messageInput" placeholder="Type your message here..." onkeydown="checkEnter(event)"></textarea><br>
     <button onclick="sendMessage()">Send Message</button>
     <p class="message-info">Sends a message to the always-on display on my desk</p>
 
@@ -73,6 +73,14 @@
                     document.getElementById("messageInput").value = ""; // Clear input
                 })
                 .catch(err => console.error("Error sending message:", err));
+            }
+        }
+
+        // Function to handle Enter key press
+        function checkEnter(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevents the default newline behavior
+                sendMessage(); // Calls sendMessage() when Enter is pressed
             }
         }
     </script>
