@@ -4,13 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messages</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            font-weight: 600;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background-color: #1e1e1e;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
     <h2>All Messages</h2>
     <ul id="messagesList"></ul>
 
     <script>
-        const backendUrl = "https://messages-7hn5.onrender.com"; // Change to your deployed backend URL
+        const backendUrl = "https://messages-7hn5.onrender.com"; // Change this to your backend URL
 
         function loadMessages() {
             fetch(`${backendUrl}/messages`)
