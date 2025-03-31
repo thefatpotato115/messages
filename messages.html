@@ -109,7 +109,7 @@
                         timestamp.textContent = formatTimeAgo(msg.timestamp);
                         li.appendChild(timestamp);
 
-                        li.addEventListener('click', () => deleteMessage(msg._id, li));
+                        li.addEventListener('click', () => deleteMessage(msg.id, li)); // Use msg.id for deletion
 
                         list.appendChild(li);
 
@@ -130,12 +130,14 @@
 
         function deleteMessage(id, element) {
             fetch(`${backendUrl}/messages/${id}`, {
-            method: 'DELETE'
+                method: 'DELETE'
             })
-            .then(() => {
-         element.remove();
-        })
-    .catch(err => console.error("Error deleting message:", err));
+            .then(response => {
+                if (response.ok) {
+                    element.remove(); // Remove message from UI
+                }
+            })
+            .catch(err => console.error("Error deleting message:", err));
         }
 
         function toggleFullScreen() {

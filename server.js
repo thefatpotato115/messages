@@ -3,11 +3,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
-let messages = [
-    // Sample messages for demonstration, each with an ID and timestamp
-    { id: 1, text: "Hello, world!", timestamp: Date.now() },
-    { id: 2, text: "This is a test message.", timestamp: Date.now() }
-];
+let messages = []; // Start with an empty array, no test data
 
 app.use(cors());
 app.use(express.json()); // To parse JSON bodies
