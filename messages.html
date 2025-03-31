@@ -33,6 +33,7 @@
             padding: 10px;
             margin: 5px;
             border-radius: 5px;
+            transition: opacity 0.5s ease-in-out;
         }
         button {
             padding: 10px 15px;
@@ -65,11 +66,19 @@
                 .then(messages => {
                     const list = document.getElementById("messagesList");
                     list.innerHTML = "";
+
                     messages.forEach(msg => {
                         const li = document.createElement("li");
                         li.textContent = msg.text;
                         list.appendChild(li);
+
+                        // Make the message fade out before removal
+                        setTimeout(() => {
+                            li.style.opacity = "0";
+                            setTimeout(() => li.remove(), 500);
+                        }, 290000); // Start fading out just before 5 minutes
                     });
+
                     scrollToBottom();
                 });
         }
