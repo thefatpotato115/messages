@@ -16,4 +16,6 @@ app.get("/messages", (req, res) => {
     res.json(messages);
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+// Use dynamic port for hosting services
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
