@@ -3,4 +3,4 @@
 </b>
 <br>
 <br>
-[View the live site](https://thefatpotato115.github.io/messages)
+[Link](https://thefatpotato115.github.io/messages)
