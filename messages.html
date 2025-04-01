@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Messages</title>
-    <link rel="icon" href="favicon.png" type="image/png"> <!-- Favicon added here -->
+    <title>Messages</title>
+    <link rel="icon" href="favicon.png" type="image/png">
     <style>
         body {
             background-color: #121212;
@@ -12,111 +12,145 @@
             font-family: 'Inter', sans-serif;
             text-align: center;
             padding: 20px;
+            overflow: hidden; /* Prevents scrolling */
         }
         h2 {
             font-weight: 600;
             color: #008080;
         }
-        .message {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            border: 1px solid #008080;
+        #messagesContainer {
+            height: 75vh;
+            overflow-y: hidden; /* Hides scrollbar */
             border-radius: 5px;
-            padding: 10px;
-            margin: 10px;
-            text-align: left;
+            background-color: #1e1e1e;
+            padding: 20px;
+            margin: 10px auto;
+            width: 90%; /* Wider */
+            border: 2px solid #008080; /* Teal border */
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background-color: #333;
+            padding: 15px; /* More padding for readability */
+            margin: 8px 0;
+            border-radius: 5px;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 18px; /* Larger text */
+            border-left: 4px solid #008080; /* Teal accent on left side */
             position: relative;
         }
-        .message:hover {
+        li:hover {
+            background-color: #2b2b2b;
             text-decoration: line-through;
             cursor: pointer;
         }
-        .message-time {
+        .timestamp {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
             font-size: 12px;
             color: #b0b0b0;
+        }
+        .fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #008080;
+            transition: color 0.3s;
+        }
+        .fullscreen-btn:hover {
+            color: #00a5a5;
         }
     </style>
 </head>
 <body>
-    <h2>Messages</h2>
-    <div id="messageContainer"></div>
+    <button class="fullscreen-btn" onclick="toggleFullScreen()">⛶</button>
+    <h2>All Messages</h2>
+    <div id="messagesContainer">
+        <ul id="messagesList"></ul>
+    </div>
 
     <script>
         const backendUrl = "https://messages-7hn5.onrender.com";
-        const messageContainer = document.getElementById("messageContainer");
 
-        // Function to load and display messages
+        function formatTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (seconds < 60) return `${seconds} second${seconds !== 1 ? 's' : ''} ago`;
+            if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+            if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+            return `${days} day${days !== 1 ? 's' : ''} ago`;
+        }
+
         function loadMessages() {
             fetch(`${backendUrl}/messages`)
                 .then(response => response.json())
                 .then(messages => {
-                    messageContainer.innerHTML = ''; // Clear current messages
-                    messages.forEach(message => {
-                        const messageElement = document.createElement("div");
-                        messageElement.classList.add("message");
-                        messageElement.innerHTML = `
-                            <p>${message.text}</p>
-                            <p class="message-time">${getTimeAgo(message.timestamp)}</p>
-                        `;
-                        messageElement.onclick = () => deleteMessage(message._id);
-                        
-                        // Check if message is older than 5 minutes
-                        if (isExpired(message.timestamp)) {
-                            return; // Skip expired messages
-                        }
+                    const list = document.getElementById("messagesList");
+                    list.innerHTML = "";
 
-                        messageContainer.appendChild(messageElement);
+                    messages.forEach(msg => {
+                        const li = document.createElement("li");
+                        li.textContent = msg.text;
+
+                        const timestamp = document.createElement("span");
+                        timestamp.classList.add("timestamp");
+                        timestamp.textContent = formatTimeAgo(msg.timestamp);
+                        li.appendChild(timestamp);
+
+                        li.addEventListener('click', () => deleteMessage(msg.id, li)); // Use msg.id for deletion
+
+                        list.appendChild(li);
+
+                        setTimeout(() => {
+                            li.style.opacity = "0";
+                            setTimeout(() => li.remove(), 500);
+                        }, 290000);
                     });
-                })
-                .catch(err => console.error("Error loading messages:", err));
+
+                    scrollToBottom();
+                });
         }
 
-        // Function to delete a message
-        function deleteMessage(messageId) {
-            fetch(`${backendUrl}/messages/${messageId}`, {
+        function scrollToBottom() {
+            const container = document.getElementById("messagesContainer");
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function deleteMessage(id, element) {
+            fetch(`${backendUrl}/messages/${id}`, {
                 method: 'DELETE'
             })
             .then(response => {
                 if (response.ok) {
-                    loadMessages(); // Reload the messages after deletion
-                } else {
-                    console.error("Failed to delete message");
+                    element.remove(); // Remove message from UI
                 }
             })
             .catch(err => console.error("Error deleting message:", err));
         }
 
-        // Function to check if the message is expired (older than 5 minutes)
-        function isExpired(timestamp) {
-            const currentTime = new Date().getTime();
-            const messageTime = new Date(timestamp).getTime();
-            const fiveMinutesInMs = 5 * 60 * 1000;
-            return currentTime - messageTime > fiveMinutesInMs;
-        }
-
-        // Function to format the time ago (e.g., "1 second ago")
-        function getTimeAgo(timestamp) {
-            const currentTime = new Date().getTime();
-            const messageTime = new Date(timestamp).getTime();
-            const differenceInSeconds = Math.floor((currentTime - messageTime) / 1000);
-            
-            if (differenceInSeconds < 60) {
-                return `${differenceInSeconds} second${differenceInSeconds > 1 ? 's' : ''} ago`;
-            } else if (differenceInSeconds < 3600) {
-                const minutes = Math.floor(differenceInSeconds / 60);
-                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-            } else if (differenceInSeconds < 86400) {
-                const hours = Math.floor(differenceInSeconds / 3600);
-                return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
             } else {
-                const days = Math.floor(differenceInSeconds / 86400);
-                return `${days} day${days > 1 ? 's' : ''} ago`;
+                document.exitFullscreen();
             }
         }
 
-        // Load messages when the page is loaded
         loadMessages();
-        setInterval(loadMessages, 30000); // Refresh messages every 30 seconds
+        setInterval(loadMessages, 2000);
     </script>
 </body>
 </html>
