@@ -62,7 +62,7 @@
                         
                         // Check if message is older than 5 minutes
                         if (isExpired(message.timestamp)) {
-                            deleteMessage(message._id);
+                            return; // Skip expired messages
                         }
 
                         messageContainer.appendChild(messageElement);
@@ -100,9 +100,7 @@
             const messageTime = new Date(timestamp).getTime();
             const differenceInSeconds = Math.floor((currentTime - messageTime) / 1000);
             
-            if (differenceInSeconds < 14) {
-                return `now`;
-            } else if (differenceInSeconds < 60) {
+            if (differenceInSeconds < 60) {
                 return `${differenceInSeconds} second${differenceInSeconds > 1 ? 's' : ''} ago`;
             } else if (differenceInSeconds < 3600) {
                 const minutes = Math.floor(differenceInSeconds / 60);
