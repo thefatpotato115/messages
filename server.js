@@ -30,7 +30,7 @@ app.post('/messages', (req, res) => {
     };
     messages.push(newMessage);
     res.status(201).json(newMessage);
-    console.log(text);
+    console.log('New message:' + text);
 });
 
 app.listen(port, () => {
