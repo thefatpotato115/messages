@@ -19,7 +19,7 @@
       top: 10px;
       left: 10px;
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse;
       align-items: flex-start;
       gap: 8px;
       transition: opacity 0.3s ease;
@@ -57,7 +57,7 @@
   <script>
     const backendUrl = "https://messages-7hn5.onrender.com";
     const container = document.getElementById("container");
-    const messageMap = new Map(); // Track messages by ID
+    const messageMap = new Map();
 
     function updateMessages() {
       fetch(`${backendUrl}/messages`)
@@ -66,47 +66,37 @@
           const now = Date.now();
           const active = messages
             .filter(m => now - new Date(m.timestamp).getTime() < 15000)
-            .reverse()
-            .slice(0, 5);
+            .slice(-5); // last 5 (bottom-up for flex-reverse)
 
           const activeIds = new Set(active.map(m => m._id));
-          
-          // Remove old ones
-          [...messageMap.keys()].forEach(id => {
+
+          // Remove expired messages
+          for (const [id, el] of messageMap.entries()) {
             if (!activeIds.has(id)) {
-              const el = messageMap.get(id);
               el.style.animation = "fadeOut 1s ease-in forwards";
               setTimeout(() => {
                 el.remove();
                 messageMap.delete(id);
-                if (messageMap.size === 0) {
-                  container.style.opacity = "0";
-                }
+                if (messageMap.size === 0) container.style.opacity = "0";
               }, 1000);
             }
-          });
+          }
 
-          // Add new ones
-          active.forEach(msg => {
+          // Add new messages
+          for (const msg of active) {
             if (!messageMap.has(msg._id)) {
               const div = document.createElement("div");
               div.className = "message new";
               div.textContent = msg.text;
-              container.insertBefore(div, container.firstChild);
+              container.appendChild(div);
               messageMap.set(msg._id, div);
-
-              setTimeout(() => {
-                div.classList.remove("new");
-              }, 400); // Prevent re-animation
+              setTimeout(() => div.classList.remove("new"), 400);
             }
-          });
+          }
 
           container.style.opacity = messageMap.size > 0 ? "1" : "0";
         })
-        .catch(err => {
-          console.error(err);
-          container.style.opacity = "0";
-        });
+        .catch(() => container.style.opacity = "0");
     }
 
     updateMessages();
