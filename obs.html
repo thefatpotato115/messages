@@ -33,9 +33,15 @@
       font-size: 22px;
       max-width: 600px;
       text-align: left;
-      opacity: 1;
-      animation: fadeOut 1s ease-in forwards;
-      animation-delay: 14s;
+      border: 2px solid #003366;
+      opacity: 0;
+      animation: slideIn 0.4s ease-out forwards, fadeOut 1s ease-in forwards;
+      animation-delay: 0s, 14s;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
 
     @keyframes fadeOut {
@@ -57,9 +63,10 @@
           const now = Date.now();
           const recentMessages = messages
             .filter(m => now - new Date(m.timestamp).getTime() < 15000)
-            .reverse(); // newest first
+            .reverse() // newest first
+            .slice(0, 5); // limit to 5
 
-          // Clear and update
+          // Clear container and repopulate
           container.innerHTML = "";
           if (recentMessages.length === 0) {
             container.style.opacity = "0";
@@ -73,7 +80,7 @@
             div.className = "message";
             div.textContent = message.text;
 
-            // Trigger animation removal after 15s
+            // Auto-remove after 15s
             setTimeout(() => {
               div.remove();
               if (container.children.length === 0) {
