@@ -17,10 +17,10 @@
     #container {
       position: absolute;
       top: 10px;
-      right: 10px;
+      left: 10px;
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 8px;
       transition: opacity 0.3s ease;
     }
@@ -28,18 +28,18 @@
     .message {
       background-color: rgba(0, 128, 128, 0.85);
       color: white;
-      padding: 10px 15px;
+      padding: 12px 18px;
       border-radius: 10px;
-      font-size: 18px;
-      max-width: 400px;
-      text-align: right;
+      font-size: 22px;
+      max-width: 600px;
+      text-align: left;
       opacity: 1;
       animation: fadeOut 1s ease-in forwards;
       animation-delay: 14s;
     }
 
     @keyframes fadeOut {
-      to { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 0; transform: translateY(-10px); }
     }
   </style>
 </head>
@@ -49,34 +49,39 @@
   <script>
     const backendUrl = "https://messages-7hn5.onrender.com";
     const container = document.getElementById("container");
-    let shownMessageIds = new Set();
 
     function loadMessages() {
       fetch(`${backendUrl}/messages`)
         .then(res => res.json())
         .then(messages => {
           const now = Date.now();
-          const activeMessages = messages
+          const recentMessages = messages
             .filter(m => now - new Date(m.timestamp).getTime() < 15000)
             .reverse(); // newest first
 
-          // Remove messages that are no longer active
+          // Clear and update
           container.innerHTML = "";
-          shownMessageIds.clear();
-
-          if (activeMessages.length === 0) {
+          if (recentMessages.length === 0) {
             container.style.opacity = "0";
             return;
           }
 
           container.style.opacity = "1";
 
-          activeMessages.forEach(message => {
+          recentMessages.forEach(message => {
             const div = document.createElement("div");
             div.className = "message";
             div.textContent = message.text;
+
+            // Trigger animation removal after 15s
+            setTimeout(() => {
+              div.remove();
+              if (container.children.length === 0) {
+                container.style.opacity = "0";
+              }
+            }, 15000);
+
             container.appendChild(div);
-            shownMessageIds.add(message._id);
           });
         })
         .catch(err => {
