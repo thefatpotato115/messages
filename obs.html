@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>OBS Message Display</title>
+  <title>OBS Messages</title>
   <link rel="icon" href="favicon.png" type="image/png" />
   <style>
     html, body {
@@ -18,49 +18,75 @@
       position: absolute;
       top: 10px;
       right: 10px;
-      background-color: rgba(0, 128, 128, 0.8); /* Teal with transparency */
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      transition: opacity 0.3s ease;
+    }
+
+    .message {
+      background-color: rgba(0, 128, 128, 0.85);
       color: white;
       padding: 10px 15px;
       border-radius: 10px;
-      font-size: 20px;
+      font-size: 18px;
       max-width: 400px;
       text-align: right;
+      opacity: 1;
+      animation: fadeOut 1s ease-in forwards;
+      animation-delay: 14s;
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateY(-5px); }
     }
   </style>
 </head>
 <body>
-  <div id="container">Loading...</div>
+  <div id="container"></div>
 
   <script>
     const backendUrl = "https://messages-7hn5.onrender.com";
-    const container = document.getElementById('container');
+    const container = document.getElementById("container");
+    let shownMessageIds = new Set();
 
-    function loadLatestMessage() {
+    function loadMessages() {
       fetch(`${backendUrl}/messages`)
         .then(res => res.json())
         .then(messages => {
-          if (messages.length > 0) {
-            const latest = messages[messages.length - 1];
-            const messageTime = new Date(latest.timestamp).getTime();
-            const now = new Date().getTime();
-            const age = now - messageTime;
-            if (age < 5 * 60 * 1000) {
-              container.textContent = latest.text;
-            } else {
-              container.textContent = '';
-            }
-          } else {
-            container.textContent = '';
+          const now = Date.now();
+          const activeMessages = messages
+            .filter(m => now - new Date(m.timestamp).getTime() < 15000)
+            .reverse(); // newest first
+
+          // Remove messages that are no longer active
+          container.innerHTML = "";
+          shownMessageIds.clear();
+
+          if (activeMessages.length === 0) {
+            container.style.opacity = "0";
+            return;
           }
+
+          container.style.opacity = "1";
+
+          activeMessages.forEach(message => {
+            const div = document.createElement("div");
+            div.className = "message";
+            div.textContent = message.text;
+            container.appendChild(div);
+            shownMessageIds.add(message._id);
+          });
         })
         .catch(err => {
           console.error(err);
-          container.textContent = '';
+          container.style.opacity = "0";
         });
     }
 
-    loadLatestMessage();
-    setInterval(loadLatestMessage, 5000);
+    loadMessages();
+    setInterval(loadMessages, 3000);
   </script>
 </body>
-</html>x
+</html>
