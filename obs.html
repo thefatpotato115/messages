@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OBS Message Display</title>
+  <link rel="icon" href="favicon.png" type="image/png" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+
+    #container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 128, 128, 0.8); /* Teal with transparency */
+      color: white;
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 20px;
+      max-width: 400px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">Loading...</div>
+
+  <script>
+    const backendUrl = "https://messages-7hn5.onrender.com";
+    const container = document.getElementById('container');
+
+    function loadLatestMessage() {
+      fetch(`${backendUrl}/messages`)
+        .then(res => res.json())
+        .then(messages => {
+          if (messages.length > 0) {
+            const latest = messages[messages.length - 1];
+            const messageTime = new Date(latest.timestamp).getTime();
+            const now = new Date().getTime();
+            const age = now - messageTime;
+            if (age < 5 * 60 * 1000) {
+              container.textContent = latest.text;
+            } else {
+              container.textContent = '';
+            }
+          } else {
+            container.textContent = '';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          container.textContent = '';
+        });
+    }
+
+    loadLatestMessage();
+    setInterval(loadLatestMessage, 5000);
+  </script>
+</body>
+</html>x
