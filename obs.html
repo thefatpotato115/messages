@@ -34,9 +34,11 @@
       max-width: 600px;
       text-align: left;
       border: 2px solid #003366;
-      opacity: 0;
-      animation: slideIn 0.4s ease-out forwards, fadeOut 1s ease-in forwards;
-      animation-delay: 0s, 14s;
+      opacity: 1;
+    }
+
+    .new {
+      animation: slideIn 0.4s ease-out;
     }
 
     @keyframes slideIn {
@@ -55,41 +57,51 @@
   <script>
     const backendUrl = "https://messages-7hn5.onrender.com";
     const container = document.getElementById("container");
+    const messageMap = new Map(); // Track messages by ID
 
-    function loadMessages() {
+    function updateMessages() {
       fetch(`${backendUrl}/messages`)
         .then(res => res.json())
         .then(messages => {
           const now = Date.now();
-          const recentMessages = messages
+          const active = messages
             .filter(m => now - new Date(m.timestamp).getTime() < 15000)
-            .reverse() // newest first
-            .slice(0, 5); // limit to 5
+            .reverse()
+            .slice(0, 5);
 
-          // Clear container and repopulate
-          container.innerHTML = "";
-          if (recentMessages.length === 0) {
-            container.style.opacity = "0";
-            return;
-          }
-
-          container.style.opacity = "1";
-
-          recentMessages.forEach(message => {
-            const div = document.createElement("div");
-            div.className = "message";
-            div.textContent = message.text;
-
-            // Auto-remove after 15s
-            setTimeout(() => {
-              div.remove();
-              if (container.children.length === 0) {
-                container.style.opacity = "0";
-              }
-            }, 15000);
-
-            container.appendChild(div);
+          const activeIds = new Set(active.map(m => m._id));
+          
+          // Remove old ones
+          [...messageMap.keys()].forEach(id => {
+            if (!activeIds.has(id)) {
+              const el = messageMap.get(id);
+              el.style.animation = "fadeOut 1s ease-in forwards";
+              setTimeout(() => {
+                el.remove();
+                messageMap.delete(id);
+                if (messageMap.size === 0) {
+                  container.style.opacity = "0";
+                }
+              }, 1000);
+            }
           });
+
+          // Add new ones
+          active.forEach(msg => {
+            if (!messageMap.has(msg._id)) {
+              const div = document.createElement("div");
+              div.className = "message new";
+              div.textContent = msg.text;
+              container.insertBefore(div, container.firstChild);
+              messageMap.set(msg._id, div);
+
+              setTimeout(() => {
+                div.classList.remove("new");
+              }, 400); // Prevent re-animation
+            }
+          });
+
+          container.style.opacity = messageMap.size > 0 ? "1" : "0";
         })
         .catch(err => {
           console.error(err);
@@ -97,8 +109,8 @@
         });
     }
 
-    loadMessages();
-    setInterval(loadMessages, 3000);
+    updateMessages();
+    setInterval(updateMessages, 3000);
   </script>
 </body>
 </html>
